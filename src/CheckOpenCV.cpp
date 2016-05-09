@@ -12,7 +12,7 @@ using namespace std;
 int main()
 {
 	int i = 0;
-	cv::VideoCapture cap("http://192.168.1.7:8080/?action=stream");
+	cv::VideoCapture cap("http://68.42.74.77:8080/?action=stream");
 	cv::Mat image;
 	cv::Mat goalImage = cv::imread("goal.jpg", CV_LOAD_IMAGE_COLOR);
 
@@ -23,6 +23,7 @@ int main()
 	vector<Vec4i> hierarchy;
 	vector<Vec4i> hierarchyGoal;
     double contourOfInterest = 0;
+    double distance;
     double ratio;
     double length;
     double area;
@@ -58,10 +59,8 @@ int main()
 	    for( int i = 0; i < contours.size(); i++ )
 	    {
 	        double similarity = matchShapes(contours[i],goal[0],CV_CONTOURS_MATCH_I2,0);
-	        cout <<"similarity\n"<< similarity << " ";
-	        if(contours[i].size()<20){
-	        	similarity = 100;
-	        }
+	        //cout <<"similarity\n"<< similarity << " ";
+
 	        if(similarity <= .5){
 	        	cout<<"found the goal!\n";
 	        	contourOfInterest = i;
@@ -70,8 +69,7 @@ int main()
 	            imshow("selected contour",goalDrawing);
 	        }
 	        else{
-	        	cv::destroyWindow("selected contour");
-	        	contourOfInterest = 33223322;
+	        	contourOfInterest = -1;
 	        }
 
 	        drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
@@ -79,7 +77,11 @@ int main()
 
 	    cv::namedWindow("contours",CV_WINDOW_AUTOSIZE);
 		cv::imshow( "contours", drawing);
-
+		if(contourOfInterest != -1){
+			Rect rect = boundingRect(contours[contourOfInterest]);
+			distance = (4.4 * 14 * 240)/(rect.height * 3);
+			cout <<"dist"<<distance;
+		}
 		cap.read( image );
 	}
     return 0;
