@@ -9,10 +9,12 @@
 using namespace cv;
 using namespace std;
 
+double normalizeAngle(double angle);
+
 int main()
 {
 	int i = 0;
-	cv::VideoCapture cap("http://68.42.74.77:8080/?action=stream");
+	cv::VideoCapture cap("http://10.0.1.7:8080/?action=stream");
 	cv::Mat image;
 	cv::Mat goalImage = cv::imread("goal.jpg", CV_LOAD_IMAGE_COLOR);
 
@@ -25,8 +27,9 @@ int main()
     double contourOfInterest = 0;
     double distance;
     double ratio;
-    double length;
+    double focalLength;
     double area;
+    double angle;
     Mat element = getStructuringElement( cv::MORPH_RECT,
     									 cv::Size(2 * 2 + 1, 2 * 2 + 1),
 										 cv::Point(2, 2) );
@@ -56,15 +59,18 @@ int main()
 		cv::findContours(thresh,contours,hierarchy, cv::RETR_TREE,cv::CHAIN_APPROX_SIMPLE);
 		Mat goalDrawing = Mat::zeros( thresh.size(), CV_8UC3 );
 		Mat drawing = Mat::zeros( thresh.size(), CV_8UC3 );
-	    for( int i = 0; i < contours.size(); i++ )
+	    for( unsigned int i = 0; i < contours.size(); i++ )
 	    {
 	        double similarity = matchShapes(contours[i],goal[0],CV_CONTOURS_MATCH_I2,0);
-	        //cout <<"similarity\n"<< similarity << " ";
+	        cout <<"similarity\n"<< similarity << " ";
 
-	        if(similarity <= .5){
+	        if(similarity <= 2){
 	        	cout<<"found the goal!\n";
+	        	printf("found the goal");
 	        	contourOfInterest = i;
 	           	drawContours(goalDrawing,contours,contourOfInterest,color,2,8,hierarchy,0,Point());
+				Rect rect = boundingRect(contours[contourOfInterest]);
+				rectangle(goalDrawing, rect.tl(), rect.br(), cv::Scalar(100, 100, 200), 2, CV_AA);
 	            cv::namedWindow("selected contour",CV_WINDOW_AUTOSIZE);
 	            imshow("selected contour",goalDrawing);
 	        }
@@ -74,15 +80,31 @@ int main()
 
 	        drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
 	    }
-
+	    Point centerPoint;
 	    cv::namedWindow("contours",CV_WINDOW_AUTOSIZE);
 		cv::imshow( "contours", drawing);
 		if(contourOfInterest != -1){
 			Rect rect = boundingRect(contours[contourOfInterest]);
-			distance = (4.4 * 14 * 240)/(rect.height * 3);
-			cout <<"dist"<<distance;
+			distance = (4.4 * 14 * 240)/(rect.height * 3);//focal length (mm) * height (inches) * photo hieght(pixels)/(obj height(pixels)*vertical sensor size(mm))
+			cout <<"dist"<<distance<<"\n";
+			centerPoint = Point((rect.x + rect.width/2), (rect.y + rect.height/2));
+			float imageCntr = 432/2-.5;
+			cout << "center point " <<centerPoint.x<<","<<centerPoint.y;
+			focalLength = (0.5 * 432 / tan(74/2));
+			angle = atan( ( centerPoint.x - 215 ) / focalLength);
+			cout<<"azimuth " <<angle * 180 / 3.14;
 		}
 		cap.read( image );
 	}
     return 0;
+}
+
+double normalizeAngle(double angle){
+	while(angle >= 360.0){
+		angle -=360;
+	}
+	while(angle <0.0){
+		angle +=360.0;
+	}
+	return angle;
 }
