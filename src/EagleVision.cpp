@@ -14,7 +14,7 @@ double normalizeAngle(double angle);
 int main()
 {
 	int i = 0;
-	cv::VideoCapture cap("http://10.0.1.7:8080/?action=stream");
+	cv::VideoCapture cap("http://10.0.1.13:8080/?action=stream");
 	cv::Mat image;
 	cv::Mat goalImage = cv::imread("goal.jpg", CV_LOAD_IMAGE_COLOR);
 
@@ -34,7 +34,7 @@ int main()
     									 cv::Size(2 * 2 + 1, 2 * 2 + 1),
 										 cv::Point(2, 2) );
 	cv::cvtColor( goalImage, goalImage, COLOR_BGR2HSV );//convert to HSV
-	cv::inRange( goalImage, Scalar( 70, 154, 73 ), Scalar( 112, 249, 156 ), goalImage );//threshold the HSV colortype
+	cv::inRange( goalImage, Scalar( 56, 202, 23 ), Scalar( 71, 255, 206 ), goalImage );//threshold the HSV colortype
 	cv::dilate( goalImage , goalImage, element );
 	cv::erode( goalImage , goalImage, element ); //dilate then erode to close any irregularities
     cv::namedWindow("test",CV_WINDOW_AUTOSIZE);
@@ -52,7 +52,7 @@ int main()
 		cv::namedWindow( "Thresholded", CV_WINDOW_AUTOSIZE );//create a window for the thresholded image
 		cv::cvtColor( image, hsv, COLOR_BGR2HSV );//convert to HSV
 		cv::waitKey( 16.67 );//wait 16.67 ms (30fps)
-		cv::inRange( hsv, Scalar( 70, 154, 73 ), Scalar( 112, 249, 156 ), thresh );//threshold the HSV colortype
+		cv::inRange( hsv, Scalar( 56, 202, 23 ), Scalar( 71, 255, 206 ), thresh );//threshold the HSV colortype
 		cv::dilate( thresh , thresh, element );
 		cv::erode( thresh , thresh, element ); //dilate then erode to close any irregularities
 		cv::imshow( "Thresholded", thresh );
@@ -91,7 +91,7 @@ int main()
 			float imageCntr = 432/2-.5;
 			cout << "center point " <<centerPoint.x<<","<<centerPoint.y;
 			focalLength = (0.5 * 432 / tan(74/2));
-			angle = atan( ( centerPoint.x - 215 ) / focalLength);
+			angle = atan( ( centerPoint.x - imageCntr ) / focalLength);
 			cout<<"azimuth " <<angle * 180 / 3.14;
 		}
 		cap.read( image );
