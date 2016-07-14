@@ -5,7 +5,8 @@
 #include <opencv2/imgcodecs/imgcodecs.hpp>
 #include "opencv2/videoio.hpp"
 #include <iostream>
-
+#include "ntcore.h"
+#include "networktables/NetworkTable.h"
 using namespace cv;
 using namespace std;
 
@@ -14,7 +15,13 @@ double normalizeAngle(double angle);
 int main()
 {
 	int i = 0;
-	cv::VideoCapture cap("http://10.0.1.13:8080/?action=stream");
+	static std::shared_ptr<NetworkTable> table;
+	NetworkTable::SetIPAddress("10.0.1.5");
+	NetworkTable::SetClientMode();
+	NetworkTable::Initialize();
+	table = NetworkTable::GetTable("EagleVision");
+	table->PutNumber("dist",1337);
+	cv::VideoCapture cap("http://10.0.1.13:5806/?action=stream");
 	cv::Mat image;
 	cv::Mat goalImage = cv::imread("./goal.jpg", CV_LOAD_IMAGE_COLOR);
 	if(cap.isOpened()){
